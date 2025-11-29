@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benchmarking Algoritmos - Home</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;background:#0b0b0b;color:#e6edf3;margin:0;padding:40px}a{color:#00ffff} .wrap{max-width:980px;margin:0 auto} header{display:flex;align-items:center;gap:20px} h1{color:#00ffff;margin:6px 0} .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px} .card{background:#0f1418;border:1px solid #222;padding:18px;border-radius:8px} footer{margin-top:30px;color:#8b949e;font-size:13px}</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div style="width:64px;height:64px;background:#00ffff;border-radius:8px"></div>
+      <div>
+        <h1>Benchmarking Algoritmos - Proyecto</h1>
+        <div style="color:#8b949e">Presentación, códigos y resultados</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Presentación</h3>
+        <ul>
+          <li><a href="documentacion.html">Ver presentación (HTML)</a></li>
+          <li><a href="documentacion.pdf">Descargar presentación (PDF)</a> (si está disponible)</li>
+        </ul>
+        <h3>Recursos</h3>
+        <ul>
+          <li><a href="codigos_html/">Códigos (HTML)</a></li>
+          <li><a href="graficas/">Carpeta de gráficas</a></li>
+          <li><a href="resultados.csv">Resultados (CSV)</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Acciones rápidas</h3>
+        <ul>
+          <li>Levantar servidor local: <code>python3 -m http.server 8000</code> y abrir <a href="http://localhost:8000/docs/">http://localhost:8000/docs/</a></li>
+          <li>Preparado para publicar en GitHub Pages desde la carpeta <code>/docs</code>.</li>
+        </ul>
+        <h3>Notas</h3>
+        <p>Si falta el PDF, puedes generarlo con <code>wkhtmltopdf --enable-local-file-access documentacion.html documentacion.pdf</code> y colocarlo en la raíz.</p>
+      </div>
+    </div>
+
+    <footer>
+      <div>Repositorio preparado para publicar en GitHub Pages (usando la carpeta <code>docs/</code>).</div>
+    </footer>
+  </div>
+</body>
+</html>

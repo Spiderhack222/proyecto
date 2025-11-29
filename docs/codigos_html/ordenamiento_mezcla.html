@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>ordenamiento_mezcla.c — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/ordenamiento_mezcla.c</h1>
+<pre>
+#include "algoritmos.h"
+#include &lt;stdlib.h&gt; // Para malloc y free
+
+void mezclar(int arr[], int izq, int med, int der, Metricas* m) {
+    int i, j, k;
+    int n1 = med - izq + 1;
+    int n2 = der - med;
+    int* L = (int*)malloc(n1 * sizeof(int));
+    int* R = (int*)malloc(n2 * sizeof(int));
+    for (i = 0; i &lt; n1; i++) { L[i] = arr[izq + i]; m-&gt;movimientos++; }
+    for (j = 0; j &lt; n2; j++) { R[j] = arr[med + 1 + j]; m-&gt;movimientos++; }
+    i = 0; j = 0; k = izq;
+    while (i &lt; n1 &amp;&amp; j &lt; n2) {
+        m-&gt;comparaciones++;
+        if (L[i] &lt;= R[j]) { arr[k] = L[i]; m-&gt;movimientos++; i++; }
+        else { arr[k] = R[j]; m-&gt;movimientos++; j++; }
+        k++;
+    }
+    while (i &lt; n1) { arr[k] = L[i]; m-&gt;movimientos++; i++; k++; }
+    while (j &lt; n2) { arr[k] = R[j]; m-&gt;movimientos++; j++; k++; }
+    free(L); free(R);
+}
+
+void ordenamientoMezcla(int arr[], int izq, int der, Metricas* m) {
+    if (izq &lt; der) {
+        int med = izq + (der - izq) / 2;
+        ordenamientoMezcla(arr, izq, med, m);
+        ordenamientoMezcla(arr, med + 1, der, m);
+        mezclar(arr, izq, med, der, m);
+    }
+}
+</pre>
+</body>
+</html>

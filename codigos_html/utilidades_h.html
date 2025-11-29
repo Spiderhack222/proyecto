@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>src/utilidades.h — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/utilidades.h</h1>
+<pre>
+#ifndef UTILIDADES_H
+#define UTILIDADES_H
+
+#include &lt;stdlib.h&gt; // Para size_t
+
+int* generarDatosUniforme(int n);
+int* generarDatosOrdenados(int n);
+int* generarDatosReversos(int n);
+int* generarDatosCasiOrdenados(int n);
+int* generarDatosDuplicados(int n);
+void copiarArreglo(int origen[], int destino[], int n);
+void imprimirArreglo(int arr[], int n);
+
+#include "metricas.h"
+void intercambiar(int* a, int* b, Metricas* m);
+
+#endif // UTILIDADES_H
+</pre>
+</body>
+</html>

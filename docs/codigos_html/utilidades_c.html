@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>src/utilidades.c — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/utilidades.c</h1>
+<pre>
+#include "utilidades.h"
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt; // Para malloc, rand
+#include &lt;time.h&gt;   // Para time (usado en srand)
+
+// Función para imprimir un arreglo
+void imprimirArreglo(int arr[], int n) {
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+// Función para copiar un arreglo
+void copiarArreglo(int origen[], int destino[], int n) {
+    for (int i = 0; i &lt; n; i++) {
+        destino[i] = origen[i];
+    }
+}
+
+// 1. Datos Aleatorios (Uniforme) 
+int* generarDatosUniforme(int n) {
+    int* arr = (int*)malloc(n * sizeof(int));
+    if (arr == NULL) return NULL; 
+    for (int i = 0; i &lt; n; i++) {
+        arr[i] = rand() % (n * 10); 
+    }
+    return arr;
+}
+
+// 2. Datos Ordenados 
+int* generarDatosOrdenados(int n) {
+    int* arr = (int*)malloc(n * sizeof(int));
+    if (arr == NULL) return NULL;
+    for (int i = 0; i &lt; n; i++) {
+        arr[i] = i + 1;
+    }
+    return arr;
+}
+
+// 3. Datos en Reverso 
+int* generarDatosReversos(int n) {
+    int* arr = (int*)malloc(n * sizeof(int));
+    if (arr == NULL) return NULL;
+    for (int i = 0; i &lt; n; i++) {
+        arr[i] = n - i;
+    }
+    return arr;
+}
+
+// 4. Datos Casi Ordenados 
+int* generarDatosCasiOrdenados(int n) {
+    int* arr = generarDatosOrdenados(n);
+    if (arr == NULL) return NULL;
+    int permutaciones = (int)(n * 0.05);
+    if (permutaciones == 0 &amp;&amp; n &gt; 1) permutaciones = 1;
+    for (int i = 0; i &lt; permutaciones; i++) {
+        int idx1 = rand() % n;
+        int idx2 = rand() % n;
+        int temp = arr[idx1]; arr[idx1] = arr[idx2]; arr[idx2] = temp;
+    }
+    return arr;
+}
+
+// 5. Datos con Duplicados 
+int* generarDatosDuplicados(int n) {
+    int* arr = (int*)malloc(n * sizeof(int));
+    if (arr == NULL) return NULL;
+    int rango = (n &gt; 100) ? (n / 10) : 10;
+    for (int i = 0; i &lt; n; i++) arr[i] = rand() % rango;
+    return arr;
+}
+
+#include "metricas.h"
+
+void intercambiar(int* a, int* b, Metricas* m) {
+    int temp = *a; *a = *b; *b = temp;
+    m-&gt;movimientos += 3;
+}
+</pre>
+</body>
+</html>

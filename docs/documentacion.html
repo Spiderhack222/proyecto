@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Informe Técnico - Benchmarking Algoritmos</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@300;400;500;600&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+	<style>
+/* --- ESTILO CYBERPUNK / INFORME TÉCNICO --- */
+:root {
+	--bg-dark: #050505;
+	--slide-bg: #0D1117;
+	--neon-cyan: #00FFFF;
+	--neon-green: #3FB950;
+	--neon-purple: #A371F7;
+	--neon-red: #FF3333;
+	--neon-yellow: #FFD700;
+	--text-main: #C9D1D9;
+	--border-color: #30363d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	background-color: var(--bg-dark);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 50px;
+	margin: 0;
+	padding: 50px 0;
+	font-family: 'Montserrat', sans-serif;
+	color: var(--text-main);
+}
+
+/* Diapositiva */
+.slide {
+	width: 1280px;
+	height: 720px;
+	background-color: var(--slide-bg);
+	border: 1px solid var(--border-color);
+	box-shadow: 0 0 30px rgba(0,0,0,0.5);
+	position: relative;
+	overflow: hidden;
+	padding: 40px;
+	display: flex;
+	flex-direction: column;
+	/* Trama de fondo */
+	background-image: 
+		linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+	background-size: 40px 40px;
+	flex-shrink: 0; /* Evitar que se encojan al imprimir */
+}
+
+/* Decoración lateral */
+.slide::before {
+	content: '';
+	position: absolute;
+	top: 0; left: 0; bottom: 0; width: 6px;
+	background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+}
+
+/* Tipografía */
+h1, h2, h3 { font-family: 'Orbitron', sans-serif; margin: 0; text-transform: uppercase; }
+
+.header {
+	border-bottom: 1px solid var(--border-color);
+	padding-bottom: 15px;
+	margin-bottom: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: end;
+}
+
+.title { color: var(--neon-cyan); font-size: 28px; display: flex; align-items: center; gap: 15px; }
+.page-num { font-family: 'Fira Code'; color: #555; }
+
+/* Layouts */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; height: 100%; }
+.split-code { display: grid; grid-template-columns: 40% 60%; gap: 30px; height: 100%; }
+.split-results { display: grid; grid-template-rows: auto 1fr; gap: 20px; height: 100%; }
+
+/* Paneles */
+.panel {
+	background: rgba(255,255,255,0.02);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	padding: 20px;
+	overflow-y: auto;
+}
+
+.panel h3 { color: var(--neon-green); font-size: 18px; margin-bottom: 10px; font-family: 'Fira Code'; }
+.panel p, .panel li { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 8px; }
+.panel ul { padding-left: 20px; }
+
+/* Code Window */
+.code-win {
+	background: #010409;
+	border: 1px solid #333;
+	border-radius: 6px;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	font-family: 'Fira Code', monospace;
+	font-size: 12px;
+}
+.code-header {
+	background: #161b22;
+	padding: 5px 10px;
+	color: #8b949e;
+	border-bottom: 1px solid #333;
+}
+.code-body { padding: 15px; overflow: auto; color: #e6edf3; white-space: pre; }
+
+/* Syntax Highlighting Fake */
+.kwd { color: #ff7b72; } .typ { color: #79c0ff; } .str { color: #a5d6ff; } .com { color: #8b949e; font-style: italic; }
+
+/* TABLAS DE RESULTADOS */
+table { width: 100%; border-collapse: collapse; font-family: 'Fira Code'; font-size: 11px; margin-bottom: 15px; }
+th { text-align: left; background: #161b22; color: var(--neon-cyan); padding: 8px; border: 1px solid #333; }
+td { border: 1px solid #333; padding: 6px; text-align: center; }
+td:first-child { text-align: left; font-weight: bold; color: var(--neon-green); }
+
+/* PLACEHOLDER DE GRÁFICAS (Para pegar manualmente) */
+.graph-slot {
+	width: 100%;
+	height: 100%;
+	border: 2px dashed var(--neon-purple);
+	background: rgba(163, 113, 247, 0.05);
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: var(--neon-purple);
+	text-align: center;
+	min-height: 200px;
+}
+.graph-slot i { font-size: 40px; margin-bottom: 10px; }
+
+/* ESTILOS DE IMPRESIÓN (EXPORTAR A PDF) */
+@media print {
+	body {
+		background-color: #000;
+		margin: 0;
+		padding: 0;
+	}
+	.slide {
+		break-after: page;
+		page-break-after: always;
+		margin: 0;
+		border: none;
+		box-shadow: none;
+		/* Asegurar que el fondo oscuro se imprima */
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+}
+	</style>
+</head>
+<body>
+
+<!-- 1. PORTADA -->
+<div class="slide">
+	<div style="text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+		<p style="color: var(--neon-purple); letter-spacing: 3px;">UNIVERSIDAD MICHOACANA DE SAN NICOLÁS DE HIDALGO</p>
+		<h1 style="font-size: 60px; margin: 20px 0; text-shadow: 0 0 20px var(--neon-cyan);">ALGORITMOS DE<br>ORDENAMIENTO</h1>
+		<p style="color: var(--neon-green); font-family: 'Fira Code'; font-size: 24px;">PROYECTO: BENCHMARKING</p>
+        
+		<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px;">
+			<div class="panel">
+				<i class="fa-solid fa-user"></i><br><strong>IVÁN CALDERÓN GARCÍA</strong><br>2337556E
+			</div>
+			<div class="panel">
+				<i class="fa-solid fa-user"></i><br><strong>DIEGO CHÁVEZ FERREIRA</strong><br>2337534J
+			</div>
+			<div class="panel">
+				<i class="fa-solid fa-user"></i><br><strong>LEÓN MAXIMILIANO GUZMÁN</strong><br>1926162A
+			</div>
+		</div>
+		<p style="margin-top: 40px; color: #666;">Dra. Violeta Medina Rios | Sección 503</p>
+	</div>
+</div>
+
+<!-- 2. OBJETIVO Y METODOLOGÍA -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-bullseye"></i> OBJETIVO & METODOLOGÍA</h2><span class="page-num">02</span></div>
+	<div class="split">
+		<div class="panel">
+			<h3>OBJETIVO GENERAL</h3>
+			<p>Diseñar, implementar y evaluar un banco de pruebas (benchmark) para comparar rendimiento y estabilidad de 4 algoritmos de ordenamiento en C.</p>
+			<p style="margin-top:10px;color:#ccc">El objetivo de este proyecto fue diseñar, implementar y evaluar un banco de pruebas para comparar el rendimiento y la estabilidad de cuatro algoritmos de ordenamiento en C, representando diferentes clases de complejidad (cuadrático, n log n, lineal y híbrido).</p>
+			<hr style="border-color:#333">
+			<h3>MÉTODO & MÉTRICAS</h3>
+			<ul>
+				<li>Repeticiones: cada experimento se ejecutó 3 veces y se promediaron los resultados.</li>
+				<li>Métricas: <strong>time_ms</strong>, <strong>comparaciones</strong>, <strong>movimientos</strong> y <strong>estable</strong>.</li>
+				<li>Tamaños evaluados: 100, 200, 500, 1000, 2500, 5000, 7500.</li>
+			</ul>
+			<h3 style="margin-top:8px">ALGORITMOS SELECCIONADOS</h3>
+			<ul>
+				<li><strong style="color:var(--neon-red)">Insertion Sort (O(n²)):</strong> Eficiente en conjuntos pequeños.</li>
+				<li><strong style="color:var(--neon-cyan)">Merge Sort (O(n log n)):</strong> Estable y consistente.</li>
+				<li><strong style="color:var(--neon-green)">Counting Sort (O(n)):</strong> Lineal, sin comparaciones.</li>
+				<li><strong style="color:var(--neon-purple)">Introsort (Híbrido):</strong> Quick + Heap + Insertion.</li>
+			</ul>
+		</div>
+		<div class="panel">
+			<h3>DATASETS (Entradas)</h3>
+			<p><strong>Tamaños (N):</strong> 100, 200, 500, 1000, 2500, 5000, 7500.</p>
+			<p><strong>Distribuciones:</strong></p>
+			<ul>
+				<li>Uniforme (Aleatorio)</li>
+				<li>Ordenado (1..N)</li>
+				<li>Reverso (N..1)</li>
+				<li>Casi Ordenado (5% swaps)</li>
+				<li>Duplicados (Rango reducido)</li>
+			</ul>
+			<p style="margin-top:8px"><a href="codigos_html/utilidades_c.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver generadores: utilidades.c</a></p>
+		</div>
+	</div>
+</div>
+
+<!-- 3. AMBIENTE DE PRUEBA (HARDWARE) -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-server"></i> HARDWARE DE PRUEBAS</h2><span class="page-num">03</span></div>
+	<div class="split">
+		<div class="code-win">
+			<div class="code-header">EQUIPO I (Principal)</div>
+ 			<div class="code-body" style="font-size:16px;line-height:1.6">
+CPU: AMD Ryzen 3 3250U @ 2.595GHz
+GPU: Radeon Graphics (4)
+RAM: 16GB
+OS:  Ubuntu 22.04.5 LTS (on Win10)
+CC:  GCC Compiler
+			</div>
+		</div>
+		<div class="code-win">
+			<div class="code-header">EQUIPO II (Secundario)</div>
+ 			<div class="code-body" style="font-size:16px;line-height:1.6">
+CPU: AMD Ryzen 5 3500U
+GPU: AMD ATI Radeon Vega Series
+RAM: 8GB
+OS:  Ubuntu 24.04.3 LTS
+CC:  GCC Compiler
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 4. CODIGO: ESTRUCTURAS Y UTILS -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-code"></i> ESTRUCTURAS DE DATOS</h2><span class="page-num">04</span></div>
+	<div class="split-code">
+		<div class="panel">
+			<h3>metricas.h</h3>
+			<p>Estructura clave pasada por referencia para contar operaciones atómicas sin afectar el flujo del algoritmo.</p>
+		</div>
+		<div class="code-win">
+			<div class="code-header">src/metricas.h</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/metricas_h.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: metricas_h.html</a></div>
+			<div class="code-body">
+<span class="com">#ifndef ALGORITMOS_H</span>
+<span class="com">#define ALGORITMOS_H</span>
+
+<span class="kwd">typedef struct</span> {
+	<span class="typ">long long</span> comparaciones;
+	<span class="typ">long long</span> movimientos;
+} <span class="typ">Metricas</span>;
+
+<span class="kwd">void</span> ordenamientoInsercion(<span class="typ">int</span> arr[], <span class="typ">int</span> n, <span class="typ">Metricas</span>* m);
+<span class="kwd">void</span> ordenamientoMezcla(<span class="typ">int</span> arr[], <span class="typ">int</span> izq, <span class="typ">int</span> der, <span class="typ">Metricas</span>* m);
+<span class="kwd">void</span> ordenamientoConteo(<span class="typ">int</span> arr[], <span class="typ">int</span> n, <span class="typ">Metricas</span>* m);
+<span class="kwd">void</span> ordenamientoIntro(<span class="typ">int</span> arr[], <span class="typ">int</span> n, <span class="typ">Metricas</span>* m);
+
+<span class="com">#endif</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 5. CODIGO: INSERTION SORT -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-arrow-down-short-wide"></i> INSERTION SORT</h2><span class="page-num">05</span></div>
+	<div class="split-code">
+		<div class="panel">
+			<h3>Lógica (detalle del código C)</h3>
+			<ul>
+				<li><strong>Firma:</strong> <code>void ordenamientoInsercion(int arr[], int n, Metricas* m)</code> — se pasa el arreglo, su tamaño y un contador de métricas por referencia.</li>
+				<li><strong>Bucle externo:</strong> itera <code>i</code> desde 1 hasta <code>n-1</code>; cada iteración toma la <em>llave</em> (<code>llave = arr[i]</code>) y la inserta en la sublista ordenada a la izquierda.</li>
+				<li><strong>Bucle interno:</strong> con <code>j = i - 1</code> se desplazan los elementos mayores que <code>llave</code> hacia la derecha (<code>arr[j+1] = arr[j]</code>) hasta encontrar la posición correcta.</li>
+				<li><strong>Actualización de métricas:</strong> el código incrementa <code>m->comparaciones</code> antes del <code>while</code> y dentro del bucle cuando se comprueba la condición; también incrementa <code>m->movimientos</code> cada vez que se asigna un valor al arreglo.</li>
+				<li><strong>Estabilidad y espacio:</strong> Insertion Sort es estable (no reordena elementos iguales) y es in-place (O(1) memoria adicional aparte de <code>Metricas</code>).</li>
+				<li><strong>Complejidad:</strong> Mejor caso O(n) (ya ordenado), promedio y peor caso O(n²) (reverso). Ideal para pequeñas N o casi ordenados.</li>
+				<li><strong>Riesgos / notas:</strong> el mayor coste son las asignaciones dentro del <code>while</code>; el contador de movimientos contabiliza cada asignación explícita en el código.</li>
+			</ul>
+		</div>
+		<div class="code-win">
+			<div class="code-header">src/ordenamiento_insercion.c</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/ordenamiento_insercion.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: ordenamiento_insercion.c</a></div>
+			<div class="code-body">
+<span class="kwd">void</span> ordenamientoInsercion(<span class="typ">int</span> arr[], <span class="typ">int</span> n, <span class="typ">Metricas</span>* m) {
+	<span class="kwd">int</span> i, llave, j;
+	<span class="kwd">for</span> (i = 1; i < n; i++) {
+		llave = arr[i];
+		m->movimientos++;
+		j = i - 1;
+        
+		m->comparaciones++;
+		<span class="kwd">while</span> (j >= 0 && arr[j] > llave) {
+			arr[j + 1] = arr[j];
+			m->movimientos++;
+			j = j - 1;
+			<span class="kwd">if</span> (j >= 0) m->comparaciones++;
+		}
+		arr[j + 1] = llave;
+		m->movimientos++;
+	}
+}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 6. CODIGO: MERGE SORT -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-code-branch"></i> MERGE SORT</h2><span class="page-num">06</span></div>
+	<div class="split-code">
+		<div class="panel">
+			<h3>Lógica (detalle del código C)</h3>
+			<ul>
+				<li><strong>Funciones clave:</strong> rutina recursiva que divide (<code>ordenamientoMezcla</code>/<code>merge</code>) y la función <code>mezclar</code> que combina dos subarreglos ordenados.</li>
+				<li><strong>Dividir:</strong> la función recibe índices <code>izq</code>, <code>med</code>, <code>der</code> y calcula tamaños <code>n1</code>, <code>n2</code> para crear arrays temporales <code>L</code> y <code>R</code>.</li>
+				<li><strong>Mezclar:</strong> usa índices <code>i</code>, <code>j</code>, <code>k</code> y compara <code>L[i] &lt;= R[j]</code>; copia el menor al arreglo original y actualiza <code>m->movimientos</code> y <code>m->comparaciones</code> según corresponda.</li>
+				<li><strong>Estabilidad:</strong> al usar la condición <code>&lt;=</code> y copiar desde el subarreglo izquierdo cuando hay empate, el algoritmo mantiene el orden relativo — por eso es estable.</li>
+				<li><strong>Memoria:</strong> requiere O(n) adicional para los arrays temporales (L y R).</li>
+				<li><strong>Complejidad:</strong> O(n log n) en todos los casos (mejor/promedio/peor) en tiempo; útil cuando la estabilidad es necesaria.</li>
+				<li><strong>Implementación práctica:</strong> el código incluye copias de los restos tras el bucle principal y actualiza métricas por cada movimiento y comparación relevante.</li>
+			</ul>
+		</div>
+		<div class="code-win">
+			<div class="code-header">src/ordenamiento_mezcla.c (Extracto)</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/ordenamiento_mezcla.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: ordenamiento_mezcla.c</a></div>
+			<div class="code-body">
+<span class="kwd">void</span> mezclar(<span class="typ">int</span> arr[], <span class="typ">int</span> izq, <span class="typ">int</span> med, <span class="typ">int</span> der, <span class="typ">Metricas</span>* m) {
+	<span class="com">// ... Alloc L y R ...</span>
+	i = 0; j = 0; k = izq;
+	<span class="kwd">while</span> (i < n1 && j < n2) {
+		m->comparaciones++;
+		<span class="kwd">if</span> (L[i] <= R[j]) {
+			arr[k] = L[i];
+			m->movimientos++;
+			i++;
+		} <span class="kwd">else</span> {
+			arr[k] = R[j];
+			m->movimientos++;
+			j++;
+		}
+		k++;
+	}
+	<span class="com">// ... Copiar restantes ...</span>
+}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 7. CODIGO: COUNTING SORT -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-arrow-down-1-9"></i> COUNTING SORT</h2><span class="page-num">07</span></div>
+	<div class="split-code">
+		<div class="panel">
+			<h3>Lógica (detalle del código C)</h3>
+			<ul>
+				<li><strong>Idea:</strong> crear un array <code>conteo</code> de tamaño <code>k</code> (máximo valor esperado + 1) y contar la frecuencia de cada valor presente en <code>arr</code>.</li>
+				<li><strong>Fases del algoritmo:</strong>
+					<ol>
+						<li>Contar frecuencias: <code>for (i=0;i&lt;n;i++) conteo[arr[i]]++</code>.</li>
+						<li>Acumular: transformar <code>conteo</code> para que cada posición indique la posición final (prefijo acumulado).</li>
+						<li>Reconstruir salida: iterar el arreglo original en reversa (<code>for (i=n-1;i&gt;=0;i--)</code>) y colocar cada elemento en su posición en <code>salida[--conteo[arr[i]]]</code> para garantizar estabilidad.</li>
+					</ol>
+				</li>
+				<li><strong>Estabilidad:</strong> la reconstrucción en orden inverso preserva estabilidad (los elementos iguales mantienen orden relativo).</li>
+				<li><strong>Complejidad:</strong> O(n + k) tiempo, O(k) memoria adicional; muy eficiente cuando k es comparable a n o menor.</li>
+				<li><strong>Limitaciones:</strong> no es práctico para valores de rango muy grande (memoria elevada). No usa comparaciones directas, por eso las métricas de comparaciones estarán a cero o irrelevantes.</li>
+			</ul>
+		</div>
+		<div class="code-win">
+			<div class="code-header">src/ordenamiento_conteo.c</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/ordenamiento_conteo.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: ordenamiento_conteo.c</a></div>
+			<div class="code-body">
+<span class="kwd">void</span> ordenamientoConteo(<span class="typ">int</span> arr[], <span class="typ">int</span> n, <span class="typ">Metricas</span>* m) {
+	<span class="com">// 1. Contar</span>
+	<span class="kwd">for</span> (i = 0; i < n; i++) conteo[arr[i]]++;
+    
+	<span class="com">// 2. Acumular</span>
+	<span class="kwd">for</span> (i = 1; i <= max; i++) conteo[i] += conteo[i - 1];
+    
+	<span class="com">// 3. Construir (Reverso para estabilidad)</span>
+	<span class="kwd">for</span> (i = n - 1; i >= 0; i--) {
+		salida[conteo[arr[i]] - 1] = arr[i];
+		m->movimientos++;
+		conteo[arr[i]]--;
+	}
+}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 8. CODIGO: INTROSORT -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-layer-group"></i> INTROSORT</h2><span class="page-num">08</span></div>
+	<div class="split-code">
+		<div class="panel">
+			<h3>Lógica (detalle del código C)</h3>
+			<ul>
+				<li><strong>Estructura general:</strong> la función <code>introRecursivo(int arr[], int ini, int fin, int prof, Metricas* m)</code> controla la recursión y decide la estrategia según el tamaño y la profundidad.</li>
+				<li><strong>Caso base (pequeño):</strong> si <code>n = fin - ini + 1 &le; 16</code>, se llama a <code>ordenamientoInsercion</code> para esa partición (menor overhead para subarreglos pequeños).</li>
+				<li><strong>Control de profundidad:</strong> <code>prof</code> inicia como 2*log(n) desde la llamada principal; si llega a 0, el algoritmo llama a <code>ordenamientoHeap</code> para evitar degeneración de Quicksort.</li>
+				<li><strong>Particionado:</strong> en el caso estándar se particiona (pivote) y se llama recursivamente a las dos mitades con <code>prof-1</code> — esto implementa la lógica Quick + fallback a Heap.</li>
+				<li><strong>Complejidad:</strong> promedio O(n log n) con comportamiento garantizado O(n log n) por el fallback a Heapsort; no es estable debido a particionados y operaciones de Heap.</li>
+				<li><strong>Ventajas prácticas:</strong> combina la velocidad de Quicksort en la práctica con la seguridad frente a entradas adversas y la eficiencia de Insertion para subproblemas pequeños.</li>
+			</ul>
+		</div>
+		<div class="code-win">
+			<div class="code-header">src/ordenamiento_intro.c</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/ordenamiento_intro.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: ordenamiento_intro.c</a></div>
+			<div class="code-body">
+<span class="kwd">void</span> introRecursivo(<span class="typ">int</span> arr[], <span class="typ">int</span> ini, <span class="typ">int</span> fin, <span class="typ">int</span> prof, <span class="typ">Metricas</span>* m) {
+	<span class="typ">int</span> n = fin - ini + 1;
+	<span class="kwd">if</span> (n <= 16) {
+		ordenamientoInsercion(arr + ini, n, m);
+		<span class="kwd">return</span>;
+	}
+	<span class="kwd">if</span> (prof == 0) {
+		ordenamientoHeap(arr + ini, n, m);
+		<span class="kwd">return</span>;
+	}
+	<span class="typ">int</span> piv = particion(arr, ini, fin, m);
+	introRecursivo(arr, ini, piv - 1, prof - 1, m);
+	introRecursivo(arr, piv + 1, fin, prof - 1, m);
+}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 9. CODIGO: MAIN & MAKEFILE -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-gears"></i> BENCHMARK ENGINE</h2><span class="page-num">09</span></div>
+	<div class="split">
+		<div class="code-win">
+			<div class="code-header">src/main.c (Bucle Principal)</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/main.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver código completo: main.c</a></div>
+			<div class="code-body">
+<span class="kwd">for</span> (algo = 0; algo &lt; 4; algo++) {
+  <span class="kwd">for</span> (dist = 0; dist &lt; 5; dist++) {
+	<span class="kwd">for</span> (tam = 0; tam &lt; 7; tam++) {
+	   <span class="com">// Generar Datos</span>
+	   original = generarDatos(dist, tam);
+	   copia = malloc(...);
+       
+	   <span class="com">// Medir Tiempo</span>
+	   t_inicio = clock();
+	   ejecutar(algo, copia, ...);
+	   t_fin = clock();
+       
+	   <span class="com">// Guardar en CSV</span>
+	   fprintf(csv, ...);
+	}
+  }
+}
+			</div>
+		</div>
+		<div class="code-win">
+			<div class="code-header">Makefile</div>
+			<div style="padding:8px 12px;background:transparent"><a href="codigos_html/Makefile.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver Makefile completo</a></div>
+			<div class="code-body">
+all: benchmark
+
+benchmark: src/main.o ...
+	gcc src/main.o ... -o benchmark -lm
+
+src/main.o: src/main.c
+	gcc -Wall -O2 -c src/main.c ...
+
+clean:
+	rm -f src/*.o benchmark
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 10. RESULTADOS: UNIFORME -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-chart-bar"></i> RESULTADOS: UNIFORME</h2><span class="page-num">10</span></div>
+	<div class="split-results">
+		<!-- TABLAS -->
+		<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+			<div>
+				<h3>Tiempo (ms)</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>22.469</td></tr>
+					<tr><td>Merge</td><td>2.048</td></tr>
+					<tr><td>Counting</td><td>0.631</td></tr>
+					<tr><td>Intro</td><td>0.574</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Comparaciones</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>14,250,048</td></tr>
+					<tr><td>Merge</td><td>87,099</td></tr>
+					<tr><td>Intro</td><td>110,042</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Movimientos</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>14,257,555</td></tr>
+					<tr><td>Merge</td><td>193,616</td></tr>
+					<tr><td>Counting</td><td>15,000</td></tr>
+				</table>
+			</div>
+		</div>
+        
+		<!-- ZONA DE GRÁFICAS -->
+		<div class="graph-slot" style="display:flex;align-items:center;justify-content:center;padding:8px;">
+			<div style="display:flex;gap:10px;width:100%;">
+				<img src="graficas/uniforme_time_ms.png" alt="Uniforme - time_ms" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/uniforme_comparaciones.png" alt="Uniforme - comparaciones" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/uniforme_movimientos.png" alt="Uniforme - movimientos" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 11. RESULTADOS: REVERSO -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-backward"></i> RESULTADOS: REVERSO (PEOR CASO)</h2><span class="page-num">11</span></div>
+	<div class="split-results">
+		<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+			<div>
+				<h3>Tiempo (ms)</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td style="color:var(--neon-red)">Insertion</td><td>64.426</td></tr>
+					<tr><td>Merge</td><td>0.628</td></tr>
+					<tr><td>Counting</td><td>0.063</td></tr>
+					<tr><td>Intro</td><td>5.647</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Comparaciones</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>28M+</td></tr>
+					<tr><td>Merge</td><td>47,376</td></tr>
+					<tr><td>Intro</td><td>363,049</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Movimientos</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>28M+</td></tr>
+					<tr><td>Merge</td><td>193,616</td></tr>
+					<tr><td>Intro</td><td>847,680</td></tr>
+				</table>
+			</div>
+		</div>
+        
+		<div class="graph-slot" style="display:flex;align-items:center;justify-content:center;padding:8px;">
+			<div style="display:flex;gap:10px;width:100%;">
+				<img src="graficas/reverso_time_ms.png" alt="Reverso - time_ms" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/reverso_comparaciones.png" alt="Reverso - comparaciones" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/reverso_movimientos.png" alt="Reverso - movimientos" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 12. RESULTADOS: CASI ORDENADO -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-arrow-down-short-wide"></i> RESULTADOS: CASI ORDENADO</h2><span class="page-num">12</span></div>
+	<div class="split-results">
+		<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+			<div>
+				<h3>Tiempo (ms)</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td style="color:var(--neon-green)">Insertion</td><td>2.682</td></tr>
+					<tr><td>Merge</td><td>0.525</td></tr>
+					<tr><td>Counting</td><td>0.105</td></tr>
+					<tr><td>Intro</td><td>0.974</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Comparaciones</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>N=7500</th></tr>
+					<tr><td>Insertion</td><td>1.7M</td></tr>
+					<tr><td>Merge</td><td>79,942</td></tr>
+					<tr><td>Intro</td><td>319,588</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Análisis</h3>
+				<p>Insertion sort brilla aquí. Aunque hace más comparaciones teóricas, su bajo overhead y la naturaleza de los datos lo hacen muy competitivo.</p>
+			</div>
+		</div>
+        
+		<div class="graph-slot" style="display:flex;align-items:center;justify-content:center;padding:8px;">
+			<div style="display:flex;gap:10px;width:100%;">
+				<img src="graficas/casi_ordenado_time_ms.png" alt="Casi Ordenado - time_ms" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/casi_ordenado_comparaciones.png" alt="Casi Ordenado - comparaciones" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/casi_ordenado_movimientos.png" alt="Casi Ordenado - movimientos" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 13. RESULTADOS: DUPLICADOS -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-clone"></i> RESULTADOS: DUPLICADOS</h2><span class="page-num">13</span></div>
+	<div class="split-results">
+		<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+			<div>
+				<h3>Tiempo (ms) - N=7500</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>Tiempo</th></tr>
+					<tr><td>Insertion</td><td>28.028</td></tr>
+					<tr><td>Merge</td><td>1.443</td></tr>
+					<tr><td>Counting</td><td>0.085</td></tr>
+					<tr><td>Intro</td><td>0.502</td></tr>
+				</table>
+			</div>
+			<div>
+				<h3>Prueba de Estabilidad</h3>
+				<table>
+					<tr><th>Algoritmo</th><th>¿Estable?</th></tr>
+					<tr><td>Insertion</td><td>SI</td></tr>
+					<tr><td>Merge</td><td>SI</td></tr>
+					<tr><td>Counting</td><td>SI</td></tr>
+					<tr><td style="color:var(--neon-red)">Introsort</td><td>NO</td></tr>
+				</table>
+			</div>
+		</div>
+        
+		<div class="graph-slot" style="display:flex;align-items:center;justify-content:center;padding:8px;">
+			<div style="display:flex;gap:10px;width:100%;">
+				<img src="graficas/duplicados_time_ms.png" alt="Duplicados - time_ms" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/duplicados_comparaciones.png" alt="Duplicados - comparaciones" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+				<img src="graficas/duplicados_movimientos.png" alt="Duplicados - movimientos" style="flex:1;max-height:240px;object-fit:contain;border-radius:6px;">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 14. DISCUSIÓN CRÍTICA -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-magnifying-glass-chart"></i> DISCUSIÓN CRÍTICA</h2><span class="page-num">14</span></div>
+	<div class="split">
+		<div class="panel">
+			<h3>O(n²) vs O(n log n)</h3>
+			<p>En casos "Uniforme" y "Duplicados", las gráficas muestran que Insertion Sort crece exponencialmente comparado con Merge e Introsort.</p>
+			<hr style="border-color:#333">
+			<h3>El Peor Caso (Reverso)</h3>
+			<p>Introsort demostró su robustez. Mientras un Quicksort simple se degradaría a O(n²), Introsort activó Heapsort manteniendo el rendimiento similar a Merge Sort.</p>
+		</div>
+		<div class="panel">
+			<h3>El Especialista: Counting Sort</h3>
+			<p>Es el ganador absoluto en tiempo (línea plana en gráficas). No aparece en gráficas de comparaciones porque no las realiza.</p>
+			<hr style="border-color:#333">
+			<h3>El Mejor Caso: Casi Ordenado</h3>
+			<p>¡Sorpresa! Insertion Sort supera expectativas. Al tener pocos elementos fuera de lugar, actúa casi como O(n), superando a algoritmos más complejos debido a su menor sobrecarga (overhead).</p>
+		</div>
+	</div>
+</div>
+
+<!-- 15. CONCLUSIONES Y RECOMENDACIONES -->
+
+
+<!-- 16. CONCLUSIONES GENERALES Y RECOMENDACIONES -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-solid fa-check-double"></i> CONCLUSIONES & RECOMENDACIONES</h2><span class="page-num">16</span></div>
+	<div class="split">
+		<div class="panel">
+			<h3>Conclusiones Principales</h3>
+			<ul>
+				<li>Introsort es el algoritmo más robusto en general: combina rapidez y tolerancia al peor caso.</li>
+				<li>Counting Sort ofrece los mejores tiempos cuando el rango de valores es pequeño y conocido.</li>
+				<li>Insertion Sort es la mejor opción para arreglos casi ordenados o con pocos elementos fuera de lugar.</li>
+				<li>Merge Sort garantiza estabilidad y tiempos consistentes en entradas diversas.</li>
+				<li>Las métricas recogidas (<strong>time_ms</strong>, <strong>comparaciones</strong>, <strong>movimientos</strong>) permiten evaluar trade-offs entre velocidad y operaciones internas.</li>
+			</ul>
+		</div>
+		<div class="panel">
+			<h3>Recomendaciones Prácticas</h3>
+			<ul>
+				<li>Usar <strong>Introsort</strong> como algoritmo por defecto en bibliotecas generales debido a su balance entre velocidad y seguridad frente al peor caso.</li>
+				<li>Aplicar <strong>Counting Sort</strong> para datasets de enteros con rango limitado (cuando la memoria adicional es aceptable).</li>
+				<li>Emplear <strong>Insertion</strong> como subrutina en híbridos para particiones pequeñas o como algoritmo rápido en arreglos casi ordenados.</li>
+				<li>Elegir <strong>Merge Sort</strong> cuando la estabilidad sea un requisito funcional (p. ej. orden por múltiples claves).</li>
+				<li>Para benchmarking reproducible: fijar semillas, ejecutar múltiples repeticiones y reportar medianas/medias con desviación.</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<!-- 16. SCRIPT PYTHON (VISUALIZACIÓN) -->
+<div class="slide">
+	<div class="header"><h2 class="title"><i class="fa-brands fa-python"></i> SCRIPT DE VISUALIZACIÓN</h2><span class="page-num">16</span></div>
+	<div class="code-win">
+		<div class="code-header">scripts/graficar.py</div>
+		<div style="padding:8px 12px;background:transparent"><a href="codigos_html/graficar_py.html" style="color:var(--neon-cyan);font-family:'Fira Code',monospace;text-decoration:none">Ver script completo: graficar.py</a></div>
+		<div class="code-body">
+<span class="kwd">import</span> pandas <span class="kwd">as</span> pd
+<span class="kwd">import</span> seaborn <span class="kwd">as</span> sns
+<span class="kwd">import</span> matplotlib.pyplot <span class="kwd">as</span> plt
+
+df = pd.read_csv(<span class="str">"resultados.csv"</span>)
+metricas = [<span class="str">'time_ms'</span>, <span class="str">'comparaciones'</span>, <span class="str">'movimientos'</span>]
+
+<span class="kwd">for</span> dist <span class="kwd">in</span> df[<span class="str">'distribucion'</span>].unique():
+	subset = df[df[<span class="str">'distribucion'</span>] == dist]
+    
+	<span class="kwd">for</span> metrica <span class="kwd">in</span> metricas:
+		plt.figure(figsize=(10, 6))
+		sns.lineplot(data=subset, x=<span class="str">'tamano'</span>, y=metrica, hue=<span class="str">'algoritmo'</span>)
+		plt.title(f<span class="str">"{metrica} vs Tamaño ({dist})"</span>)
+		plt.savefig(f<span class="str">"graficas/{dist}_{metrica}.png"</span>)
+		</div>
+	</div>
+</div>
+
+<!-- 17. CIERRE -->
+<div class="slide">
+	<div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+		<h1 style="font-size: 80px; color: var(--neon-cyan); margin-bottom: 20px;">GRACIAS POR SU ATENCION</h1>
+		<p style="font-size: 24px; color: #fff;">¿PREGUNTAS?</p>
+        
+		<div style="margin-top: 60px; border: 1px solid var(--neon-green); padding: 15px 30px; border-radius: 4px; color: var(--neon-green); font-family: 'Fira Code';">
+			Process finished with exit code 0
+		</div>
+	</div>
+</div>
+
+</body>
+</html>
+

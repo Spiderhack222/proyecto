@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>scripts/graficar.py — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>scripts/graficar.py</h1>
+<pre>
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# --- 1. Configuración ---
+ARCHIVO_CSV = "resultados.csv"
+CARPETA_GRAFICAS = "graficas"
+if not os.path.exists(CARPETA_GRAFICAS): os.makedirs(CARPETA_GRAFICAS)
+print(f"Cargando datos desde {ARCHIVO_CSV}...")
+try:
+    datos = pd.read_csv(ARCHIVO_CSV)
+    datos['comparaciones'] = pd.to_numeric(datos['comparaciones'], errors='coerce').fillna(0)
+    datos['movimientos'] = pd.to_numeric(datos['movimientos'], errors='coerce').fillna(0)
+    datos['time_ms'] = pd.to_numeric(datos['time_ms'], errors='coerce').fillna(0)
+    datos_promedio = datos.groupby(['algoritmo', 'distribucion', 'tamano']).mean(numeric_only=True).reset_index()
+    metricas = ['time_ms', 'comparaciones', 'movimientos']
+    distribuciones = datos_promedio['distribucion'].unique()
+    for dist in distribuciones:
+        datos_dist = datos_promedio[datos_promedio['distribucion'] == dist]
+        for metrica in metricas:
+            if metrica == 'comparaciones': datos_metrica = datos_dist[datos_dist['algoritmo'] != 'Conteo']
+            else: datos_metrica = datos_dist
+            plt.figure(figsize=(10,6))
+            sns.lineplot(data=datos_metrica, x='tamano', y=metrica, hue='algoritmo', style='algoritmo', markers=True, dashes=False)
+            plt.title(f'{metrica.capitalize()} vs. Tamaño del Arreglo ({dist.capitalize()})')
+            plt.xlabel('Tamaño del Arreglo (n)'); plt.ylabel(f'{metrica.capitalize()}')
+            plt.legend(title='Algoritmo'); plt.grid(True)
+            nombre_archivo = f"{CARPETA_GRAFICAS}/{dist}_{metrica}.png"
+            plt.savefig(nombre_archivo); plt.close()
+    print(f"¡Gráficas generadas y guardadas en la carpeta '{CARPETA_GRAFICAS}'!")
+except FileNotFoundError:
+    print(f"Error: No se encontró el archivo '{ARCHIVO_CSV}'.")
+except Exception as e:
+    print(f"Ocurrió un error: {e}")
+</pre>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>ordenamiento_intro.c — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/ordenamiento_intro.c</h1>
+<pre>
+#include "algoritmos.h"
+#include "utilidades.h"
+#include &lt;math.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define LIMITE_INSERCION 16
+
+void heapify(int arr[], int n, int i, Metricas* m) {
+    int mayor = i; int izq = 2 * i + 1; int der = 2 * i + 2;
+    if (izq &lt; n) { m-&gt;comparaciones++; if (arr[izq] &gt; arr[mayor]) mayor = izq; }
+    if (der &lt; n) { m-&gt;comparaciones++; if (arr[der] &gt; arr[mayor]) mayor = der; }
+    if (mayor != i) { intercambiar(&arr[i], &arr[mayor], m); heapify(arr, n, mayor, m); }
+}
+
+void ordenamientoHeap(int arr[], int n, Metricas* m) {
+    for (int i = n / 2 - 1; i &gt;= 0; i--) heapify(arr, n, i, m);
+    for (int i = n - 1; i &gt; 0; i--) { intercambiar(&arr[0], &arr[i], m); heapify(arr, i, 0, m); }
+}
+
+int particion(int arr[], int bajo, int alto, Metricas* m) {
+    int pivote = arr[alto]; int i = (bajo - 1);
+    for (int j = bajo; j &lt;= alto - 1; j++) { m-&gt;comparaciones++; if (arr[j] &lt;= pivote) { i++; intercambiar(&arr[i], &arr[j], m); } }
+    intercambiar(&arr[i + 1], &arr[alto], m); return (i + 1);
+}
+
+void introsortRecursivo(int arr[], int inicio, int fin, int limiteProfundidad, Metricas* m) {
+    int n = fin - inicio + 1;
+    if (n &lt;= LIMITE_INSERCION) { if (n &gt; 1) ordenamientoInsercion(arr + inicio, n, m); return; }
+    if (limiteProfundidad == 0) { ordenamientoHeap(arr + inicio, n, m); return; }
+    int pivoteIdx = particion(arr, inicio, fin, m);
+    introsortRecursivo(arr, inicio, pivoteIdx - 1, limiteProfundidad - 1, m);
+    introsortRecursivo(arr, pivoteIdx + 1, fin, limiteProfundidad - 1, m);
+}
+
+void ordenamientoIntro(int arr[], int n, Metricas* m) {
+    if (n &lt;= 0) return; int limite = (int)(2 * log2(n)); introsortRecursivo(arr, 0, n - 1, limite, m);
+}
+</pre>
+</body>
+</html>

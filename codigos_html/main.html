@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>src/main.c — Código completo</title>
+  <style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+  <h1>src/main.c</h1>
+  <pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;time.h&gt; // Para clock() y srand()
+
+#include "algoritmos.h"
+#include "metricas.h"
+#include "utilidades.h"
+
+// --- 1. Definición de los Experimentos ---
+
+// Nombres de los algoritmos para el CSV
+const char* NOMBRES_ALGORITMOS[] = {
+    "Insercion",
+    "Mezcla",
+    "Conteo",
+    "Intro"
+};
+const int NUM_ALGORITMOS = 4;
+
+// Nombres de las distribuciones para el CSV 
+const char* NOMBRES_DISTRIBUCIONES[] = {
+    "uniforme",
+    "ordenado",
+    "reverso",
+    "casi_ordenado",
+    "duplicados"
+};
+const int NUM_DISTRIBUCIONES = 5;
+
+int TAMANOS[] = {100, 200, 500, 1000, 2500, 5000, 7500};
+const int NUM_TAMANOS = sizeof(TAMANOS) / sizeof(TAMANOS[0]);
+const int REPETICIONES = 3;
+
+int* generarDatos(int indice_distribucion, int n) {
+    switch (indice_distribucion) {
+        case 0: return generarDatosUniforme(n);
+        case 1: return generarDatosOrdenados(n);
+        case 2: return generarDatosReversos(n);
+        case 3: return generarDatosCasiOrdenados(n);
+        case 4: return generarDatosDuplicados(n);
+        default: return NULL;
+    }
+}
+
+void ejecutarAlgoritmo(int indice_algoritmo, int* arr, int n, Metricas* m) {
+    switch (indice_algoritmo) {
+        case 0: ordenamientoInsercion(arr, n, m); break;
+        case 1: ordenamientoMezcla(arr, 0, n - 1, m); break;
+        case 2: ordenamientoConteo(arr, n, m); break;
+        case 3: ordenamientoIntro(arr, n, m); break;
+    }
+}
+
+const char* obtenerEstabilidad(int indice_algoritmo) {
+    switch (indice_algoritmo) {
+        case 0: return "SI"; case 1: return "SI"; case 2: return "SI"; case 3: return "NO"; default: return "NA";
+    }
+}
+
+int main() {
+    srand(time(NULL));
+    FILE* archivo_csv = fopen("resultados.csv", "w");
+    if (archivo_csv == NULL) { fprintf(stderr, "Error: No se pudo abrir el archivo resultados.csv\n"); return 1; }
+    fprintf(archivo_csv, "algoritmo,distribucion,tamano,repeticion,time_ms,comparaciones,movimientos,estable\n");
+    printf("Iniciando benchmark... Esto puede tardar varios minutos.\n");
+
+    for (int idx_algo = 0; idx_algo &lt; NUM_ALGORITMOS; idx_algo++) {
+        const char* nombre_algo = NOMBRES_ALGORITMOS[idx_algo];
+        printf("Probando Algoritmo: %s\n", nombre_algo);
+        for (int idx_dist = 0; idx_dist &lt; NUM_DISTRIBUCIONES; idx_dist++) {
+            const char* nombre_dist = NOMBRES_DISTRIBUCIONES[idx_dist];
+            printf("  Distribucion: %s\n", nombre_dist);
+            for (int idx_tam = 0; idx_tam &lt; NUM_TAMANOS; idx_tam++) {
+                int n = TAMANOS[idx_tam];
+                for (int rep = 1; rep &lt;= REPETICIONES; rep++) {
+                    int* arreglo_original = generarDatos(idx_dist, n);
+                    if (arreglo_original == NULL) { fprintf(stderr, "Error de memoria al generar datos.\n"); continue; }
+                    int* copia_trabajo = (int*)malloc(n * sizeof(int));
+                    if (copia_trabajo == NULL) { fprintf(stderr, "Error de memoria al crear copia.\n"); free(arreglo_original); continue; }
+                    copiarArreglo(arreglo_original, copia_trabajo, n);
+                    Metricas metricas = {0, 0};
+                    clock_t inicio = clock();
+                    ejecutarAlgoritmo(idx_algo, copia_trabajo, n, &metricas);
+                    clock_t fin = clock();
+                    double time_ms = ((double)(fin - inicio) * 1000) / CLOCKS_PER_SEC;
+                    const char* estabilidad = obtenerEstabilidad(idx_algo);
+                    if (idx_algo == 2) {
+                        fprintf(archivo_csv, "%s,%s,%d,%d,%.4f,NA,%lld,%s\n", nombre_algo, nombre_dist, n, rep, time_ms, metricas.movimientos, estabilidad);
+                    } else {
+                        fprintf(archivo_csv, "%s,%s,%d,%d,%.4f,%lld,%lld,%s\n", nombre_algo, nombre_dist, n, rep, time_ms, metricas.comparaciones, metricas.movimientos, estabilidad);
+                    }
+                    free(arreglo_original); free(copia_trabajo);
+                }
+            }
+        }
+    }
+    fclose(archivo_csv);
+    printf("¡Benchmark finalizado! Resultados guardados en 'resultados.csv'.\n");
+    return 0;
+  </pre>
+</body>
+</html>

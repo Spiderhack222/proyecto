@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Makefile — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>Makefile</h1>
+<pre>
+# --- Regla Principal ---
+all: benchmark
+
+benchmark: src/main.o src/utilidades.o src/ordenamiento_insercion.o src/ordenamiento_mezcla.o src/ordenamiento_conteo.o src/ordenamiento_intro.o
+	gcc src/main.o src/utilidades.o src/ordenamiento_insercion.o src/ordenamiento_mezcla.o src/ordenamiento_conteo.o src/ordenamiento_intro.o -o benchmark -lm
+
+src/main.o: src/main.c src/algoritmos.h src/metricas.h src/utilidades.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/main.c -o src/main.o
+
+src/utilidades.o: src/utilidades.c src/utilidades.h src/metricas.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/utilidades.c -o src/utilidades.o
+
+src/ordenamiento_insercion.o: src/ordenamiento_insercion.c src/algoritmos.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/ordenamiento_insercion.c -o src/ordenamiento_insercion.o
+
+src/ordenamiento_mezcla.o: src/ordenamiento_mezcla.c src/algoritmos.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/ordenamiento_mezcla.c -o src/ordenamiento_mezcla.o
+
+src/ordenamiento_conteo.o: src/ordenamiento_conteo.c src/algoritmos.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/ordenamiento_conteo.c -o src/ordenamiento_conteo.o
+
+src/ordenamiento_intro.o: src/ordenamiento_intro.c src/algoritmos.h src/utilidades.h
+	gcc -Wall -Wextra -g -O2 -std=c99 -c src/ordenamiento_intro.c -o src/ordenamiento_intro.o
+
+clean:
+	rm -f src/main.o src/utilidades.o src/ordenamiento_insercion.o src/ordenamiento_mezcla.o src/ordenamiento_conteo.o src/ordenamiento_intro.o benchmark
+</pre>
+</body>
+</html>

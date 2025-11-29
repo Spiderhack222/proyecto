@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>ordenamiento_conteo.c — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/ordenamiento_conteo.c</h1>
+<pre>
+#include "algoritmos.h"
+#include &lt;stdlib.h&gt; // Para malloc y free
+#include &lt;stdio.h&gt;  // Para printf (en caso de error)
+#include &lt;string.h&gt; // Para memset
+
+int encontrarMaximo(int arr[], int n) {
+    if (n &lt;= 0) return 0;
+    int max = arr[0];
+    for (int i = 1; i &lt; n; i++) if (arr[i] &gt; max) max = arr[i];
+    return max;
+}
+
+void ordenamientoConteo(int arr[], int n, Metricas* m) {
+    if (n &lt;= 0) return;
+    int maximo = encontrarMaximo(arr, n);
+    int* conteo = (int*)calloc(maximo + 1, sizeof(int));
+    int* salida = (int*)malloc(n * sizeof(int));
+    if (conteo == NULL || salida == NULL) { fprintf(stderr, "Error: Falla de malloc en Counting Sort\n"); free(conteo); free(salida); return; }
+    for (int i = 0; i &lt; n; i++) conteo[arr[i]]++;
+    for (int i = 1; i &lt;= maximo; i++) conteo[i] += conteo[i - 1];
+    for (int i = n - 1; i &gt;= 0; i--) { salida[conteo[arr[i]] - 1] = arr[i]; m-&gt;movimientos++; conteo[arr[i]]--; }
+    for (int i = 0; i &lt; n; i++) { arr[i] = salida[i]; m-&gt;movimientos++; }
+    free(conteo); free(salida);
+}
+</pre>
+</body>
+</html>

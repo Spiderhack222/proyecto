@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>ordenamiento_insercion.c — Código completo</title>
+<style>body{background:#0d1117;color:#c9d1d9;font-family:Menlo,Monaco,monospace;padding:20px}pre{background:#010409;padding:20px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+<h1>src/ordenamiento_insercion.c</h1>
+<pre>
+#include "algoritmos.h"
+
+void ordenamientoInsercion(int arr[], int n, Metricas* m) {
+    int i, llave, j;
+    
+    // Empezamos desde el segundo elemento (índice 1)
+    for (i = 1; i &lt; n; i++) {
+        
+        // Guardamos el elemento a insertar
+        llave = arr[i];
+        // Contamos esto como un "movimiento" (de arr[i] a 'llave')
+        m-&gt;movimientos++; 
+        
+        j = i - 1;
+
+        // Comparamos 'llave' con los elementos a su izquierda
+        m-&gt;comparaciones++;
+        while (j &gt;= 0 &amp;&amp; arr[j] &gt; llave) {
+            arr[j + 1] = arr[j];
+            m-&gt;movimientos++;
+            j = j - 1;
+            if (j &gt;= 0) m-&gt;comparaciones++;
+        }
+        arr[j + 1] = llave;
+        m-&gt;movimientos++;
+    }
+}
+</pre>
+</body>
+</html>
